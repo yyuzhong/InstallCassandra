@@ -27,4 +27,12 @@ service opscenterd start
 #psh compute[000-023] echo "use_ssl: 1" | sudo tee -a /var/lib/datastax-agent/conf/address.yaml
 
 
+#Install with tar ball.
+curl -L http://downloads.datastax.com/community/dsc-2.0.tar.gz | tar xz
+#Change conf/cassandra.yaml:seed,listen_address,rpc_address, bin/cassandra:JAVA_HOME
+/opt/cscloud/utils/cp_file_all ./dsc-cassandra-2.1.5 /opt/cscloud/
+pdsh -w compute[000-023] ln -sf /opt/cscloud/dsc-cassandra-2.1.5 /opt/cscloud/cassandra-latest
+pdsh -w compute[000-003] /opt/cscloud/cassandra-latest/bin/cassandra
+pdsh -w compute[017-023] /opt/cscloud/cassandra-latest/bin/cassandra -Dconsistent.rangemovement=false
 
+pdsh -w compute[000-023] "jps | grep CassandraDaemon | cut -d ' ' -f 1 | xargs -rn1 kill"
